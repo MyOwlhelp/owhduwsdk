@@ -1,7 +1,7 @@
 --!optimize 2
 
 -- Advanced Decompiler v3 by: w-a-e
--- i've updated the decompiler
+-- modded the decompiler, bugs fixed.
 -- Original: https://github.com/w-a-e/Advanced-Decompiler-V3/blob/main/init.lua
 local DEFAULT_OPTIONS = {
 	EnabledRemarks = {
@@ -911,13 +911,13 @@ local function Decompile(bytecode, options)
 					end
 					local function writeOperationBody()
 						local function formatRegister(register)
-							local parameterRegister = register + 1 -- parameter registers start from 0
-							if parameterRegister < numParams + 1 then
+							local parameterRegister = register + 2 -- parameter registers start from 0
+							if parameterRegister < numParams + 4 then
 								-- this means we are using preserved parameter register
 								return "p".. ((totalParameters - numParams) + parameterRegister)
 							end
 
-							return "v".. (register - numParams)
+							return "local v".. (register - numParams)
 						end
 
 						local function formatUpvalue(register)
