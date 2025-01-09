@@ -8,7 +8,7 @@ local DEFAULT_OPTIONS = {
 		ColdRemark = false,
 		InlineRemark = true -- currently unused
 	},
-	DecompilerTimeout = 500, -- seconds
+	DecompilerTimeout = 2500, -- seconds
 	DecompilerMode = "disasm", -- optdec/disasm
 	ReaderFloatPrecision = 27, -- up to 99
 	ShowDebugInformation = false, -- show trivial function and array allocation details
