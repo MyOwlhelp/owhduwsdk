@@ -1884,7 +1884,7 @@ local function Decompile(bytecode, options)
 end
 
 local _ENV = (getgenv or getrenv or getfenv)()
-_ENV.decompile = function(script, x, n_v)
+_ENV.decompile = function(script, x, ...)
 	if not getscriptbytecode then
 		error("decompile is not enabled. (getscriptbytecode is missing)", 2)
 		return
@@ -1926,7 +1926,7 @@ _ENV.decompile = function(script, x, n_v)
 		elseif varType == "string" then -- mode
 			options.DecompilerMode = x
 
-			local timeout = n_v
+			local timeout = ...
 			if timeout then
 				if type(timeout) ~= "number" then
 					error("invalid argument #3 to 'decompile' (number expected)", 2)
