@@ -894,7 +894,7 @@ local function Decompile(bytecode, options)
 							line = ""
 						end
 
-						result ..= index .." ".. line "l__" .. name .. "__l"
+						result ..= index .." ".. line .. name
 					end
 					local function writeOperationBody()
 						local function formatRegister(register)
@@ -935,7 +935,7 @@ local function Decompile(bytecode, options)
 
 							-- if function has a name, add it
 							if name then
-								protoBody = "local function l__" .. name .. "__l"
+								protoBody = "local function ".. name
 							else
 								protoBody = "function "
 							end
@@ -1006,13 +1006,13 @@ local function Decompile(bytecode, options)
 
 							local name = proto.name
 							if name then
-								result = result .. "\n" .. protoBody
+								result ..= "\n".. protoBody
 								writeActions(registerActions[proto.id])
-								result = result .. "end\n" .. formatRegister(register) .. " = \"l__" .. name .. "__l\""
+								result ..= "end\n".. formatRegister(register) .." = ".. name
 							else
-								result = result .. formatRegister(register) .. " = " .. protoBody
+								result ..= formatRegister(register) .." = ".. protoBody
 								writeActions(registerActions[proto.id])
-								result = result .. "end"
+								result ..= "end"
 							end
 						end
 
@@ -1884,7 +1884,7 @@ local function Decompile(bytecode, options)
 end
 
 local _ENV = (getgenv or getrenv or getfenv)()
-_ENV.decompile = function(script, x, ...)
+_ENV.decompile = function(script, x, n_v)
 	if not getscriptbytecode then
 		error("decompile is not enabled. (getscriptbytecode is missing)", 2)
 		return
@@ -1926,7 +1926,7 @@ _ENV.decompile = function(script, x, ...)
 		elseif varType == "string" then -- mode
 			options.DecompilerMode = x
 
-			local timeout = ...
+			local timeout = n_v
 			if timeout then
 				if type(timeout) ~= "number" then
 					error("invalid argument #3 to 'decompile' (number expected)", 2)
