@@ -1282,7 +1282,7 @@ local function Decompile(bytecode, options)
 
 							makeJumpMarker(endIndex)
 
-							result ..= "if not ".. formatRegister(sourceRegister) .." then -- goto #".. endIndex
+							result ..= "if not ".. formatRegister(sourceRegister) .." then -- goto line: #".. endIndex
 						elseif opCodeName == "JUMPIFNOT" then
 							local sourceRegister = usedRegisters[1]
 
@@ -1293,7 +1293,7 @@ local function Decompile(bytecode, options)
 
 							makeJumpMarker(endIndex)
 
-							result ..= "if ".. formatRegister(sourceRegister) .." then -- goto #".. endIndex
+							result ..= "if ".. formatRegister(sourceRegister) .." then -- goto line: #".. endIndex
 						elseif opCodeName == "JUMPIFEQ" then
 							local leftRegister = usedRegisters[1]
 							local rightRegister = usedRegisters[2]
@@ -1305,7 +1305,7 @@ local function Decompile(bytecode, options)
 
 							makeJumpMarker(endIndex)
 
-							result ..= "if ".. formatRegister(leftRegister) .." == ".. formatRegister(rightRegister) .." then -- goto #".. endIndex
+							result ..= "if ".. formatRegister(leftRegister) .." == ".. formatRegister(rightRegister) .." then -- goto line: #".. endIndex
 						elseif opCodeName == "JUMPIFLE" then
 							local leftRegister = usedRegisters[1]
 							local rightRegister = usedRegisters[2]
@@ -1317,7 +1317,7 @@ local function Decompile(bytecode, options)
 
 							makeJumpMarker(endIndex)
 
-							result ..= "if ".. formatRegister(leftRegister) .." => ".. formatRegister(rightRegister) .." then -- goto #".. endIndex
+							result ..= "if ".. formatRegister(leftRegister) .." => ".. formatRegister(rightRegister) .." then -- goto line: #".. endIndex
 						elseif opCodeName == "JUMPIFLT" then -- may be wrong
 							local leftRegister = usedRegisters[1]
 							local rightRegister = usedRegisters[2]
@@ -1329,7 +1329,7 @@ local function Decompile(bytecode, options)
 
 							makeJumpMarker(endIndex)
 
-							result ..= "if ".. formatRegister(leftRegister) .." > ".. formatRegister(rightRegister) .." then -- goto #".. endIndex
+							result ..= "if ".. formatRegister(leftRegister) .." > ".. formatRegister(rightRegister) .." then -- goto line: #".. endIndex
 						elseif opCodeName == "JUMPIFNOTEQ" then
 							local leftRegister = usedRegisters[1]
 							local rightRegister = usedRegisters[2]
@@ -1341,7 +1341,7 @@ local function Decompile(bytecode, options)
 
 							makeJumpMarker(endIndex)
 
-							result ..= "if ".. formatRegister(leftRegister) .." ~= ".. formatRegister(rightRegister) .." then -- goto #".. endIndex
+							result ..= "if ".. formatRegister(leftRegister) .." ~= ".. formatRegister(rightRegister) .." then -- goto line: #".. endIndex
 						elseif opCodeName == "JUMPIFNOTLE" then
 							local leftRegister = usedRegisters[1]
 							local rightRegister = usedRegisters[2]
@@ -1353,7 +1353,7 @@ local function Decompile(bytecode, options)
 
 							makeJumpMarker(endIndex)
 
-							result ..= "if ".. formatRegister(leftRegister) .." <= ".. formatRegister(rightRegister) .." then -- goto #".. endIndex
+							result ..= "if ".. formatRegister(leftRegister) .." <= ".. formatRegister(rightRegister) .." then -- goto line: #".. endIndex
 						elseif opCodeName == "JUMPIFNOTLT" then
 							local leftRegister = usedRegisters[1]
 							local rightRegister = usedRegisters[2]
@@ -1365,7 +1365,7 @@ local function Decompile(bytecode, options)
 
 							makeJumpMarker(endIndex)
 
-							result ..= "if ".. formatRegister(leftRegister) .." < ".. formatRegister(rightRegister) .." then -- goto #".. endIndex
+							result ..= "if ".. formatRegister(leftRegister) .." < ".. formatRegister(rightRegister) .." then -- goto line: #".. endIndex
 						elseif opCodeName == "ADD" then
 							local targetRegister = usedRegisters[1]
 							local leftRegister = usedRegisters[2]
@@ -1683,7 +1683,7 @@ local function Decompile(bytecode, options)
 
 							makeJumpMarker(endIndex)
 
-							result ..= "if ".. formatRegister(sourceRegister) .." ".. sign .." nil then -- goto #".. endIndex
+							result ..= "if ".. formatRegister(sourceRegister) .." ".. sign .." nil then -- goto line: #".. endIndex
 						elseif opCodeName == "JUMPXEQKB" then
 							local sourceRegister = usedRegisters[1]
 
@@ -1700,7 +1700,7 @@ local function Decompile(bytecode, options)
 
 							makeJumpMarker(endIndex)
 
-							result ..= "if ".. formatRegister(sourceRegister) .." ".. sign .." ".. value .." then -- goto #".. endIndex
+							result ..= "if ".. formatRegister(sourceRegister) .." ".. sign .." ".. value .." then -- goto line: #".. endIndex
 						elseif opCodeName == "JUMPXEQKN" then
 							local sourceRegister = usedRegisters[1]
 
@@ -1717,7 +1717,7 @@ local function Decompile(bytecode, options)
 
 							makeJumpMarker(endIndex)
 
-							result ..= "if ".. formatRegister(sourceRegister) .." ".. sign .." ".. value .." then -- goto #".. endIndex
+							result ..= "if ".. formatRegister(sourceRegister) .." ".. sign .." ".. value .." then -- goto line: #".. endIndex
 						elseif opCodeName == "JUMPXEQKS" then
 							local sourceRegister = usedRegisters[1]
 
@@ -1734,7 +1734,7 @@ local function Decompile(bytecode, options)
 
 							makeJumpMarker(endIndex)
 
-							result ..= "if ".. formatRegister(sourceRegister) .." ".. sign .." ".. value .." then -- goto #".. endIndex
+							result ..= "if ".. formatRegister(sourceRegister) .." ".. sign .." ".. value .." then -- goto line: #".. endIndex
 						elseif opCodeName == "CAPTURE" then
 							result ..= "-- upvalue capture"
 						elseif opCodeName == "SUBRK" then -- constant sub (reverse SUBK)
