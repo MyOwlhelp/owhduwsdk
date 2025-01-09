@@ -963,9 +963,9 @@ local function Decompile(bytecode, options)
 							if isVarArg then
 								if numParams > 0 then
 									-- top it off with ...
-									protoBody ..= ", ..."
+									protoBody ..= ", n_v"
 								else
-									protoBody ..= "..."
+									protoBody ..= "n_v"
 								end
 							end
 
@@ -973,6 +973,9 @@ local function Decompile(bytecode, options)
 
 							-- additional debug information
 							if options.ShowDebugInformation then
+								protoBody ..= "-- Synapse X Luau decompiler\n"
+							end
+							--[[if options.ShowDebugInformation then
 								protoBody ..= "-- proto pool id: ".. proto.id .. "\n"
 								protoBody ..= "-- num upvalues: ".. proto.numUpvalues .. "\n"
 								protoBody ..= "-- num inner protos: ".. proto.sizeInnerProtos .. "\n"
@@ -981,7 +984,7 @@ local function Decompile(bytecode, options)
 								protoBody ..= "-- lineinfo gap: ".. proto.lineInfoSize .. "\n"
 								protoBody ..= "-- max stack size: ".. proto.maxStackSize .. "\n"
 								protoBody ..= "-- is typed: ".. tostring(proto.hasTypeInfo) .. "\n"
-							end
+							end]]
 
 							return protoBody
 						end
@@ -1249,9 +1252,8 @@ local function Decompile(bytecode, options)
 								end
 							end
 
-								result = result .. retBody
-							
 							result ..= "return".. retBody
+							
 						elseif opCodeName == "JUMP" then
 							local jumpOffset = extraData[1]
 
@@ -1260,7 +1262,7 @@ local function Decompile(bytecode, options)
 
 							--makeJumpMarker(endIndex)
 
-							result ..= "-- jump to #" .. endIndex
+							result ..= "-- jump to line: #" .. endIndex
 						elseif opCodeName == "JUMPBACK" then
 							local jumpOffset = extraData[1] + 1
 
@@ -1269,7 +1271,7 @@ local function Decompile(bytecode, options)
 
 							--makeJumpMarker(endIndex)
 
-							result ..= "-- jump back to #" .. endIndex
+							result ..= "-- jump back to line: #" .. endIndex
 						elseif opCodeName == "JUMPIF" then
 							local sourceRegister = usedRegisters[1]
 
@@ -1539,7 +1541,7 @@ local function Decompile(bytecode, options)
 
 							local changeBody = ""
 							if valueCount == 0 then -- MULTRET
-								changeBody = formatRegister(targetRegister) .."[".. startIndex .."] = [...]"
+								changeBody = formatRegister(targetRegister) .."[".. startIndex .."] = (n_v)"
 							else
 								local totalRegisters = #usedRegisters - 1
 								for i = 1, totalRegisters do
@@ -1641,13 +1643,13 @@ local function Decompile(bytecode, options)
 									end
 								end
 							end
-							retBody ..= " = ..."
+							retBody ..= " = n_v" -- ...
 
 							result ..= retBody
 						elseif opCodeName == "PREPVARARGS" then
 							local numParams = extraData[1]
 
-							result ..= "-- ... ; number of fixed args: ".. numParams
+							result ..= "-- n_v ; number of fixed args: ".. numParams
 						elseif opCodeName == "LOADKX" then
 							local targetRegister = usedRegisters[1]
 
@@ -1882,7 +1884,7 @@ local function Decompile(bytecode, options)
 end
 
 local _ENV = (getgenv or getrenv or getfenv)()
-_ENV.decompile = function(script, x, ...)
+_ENV.decompile = function(script, x, n_v)
 	if not getscriptbytecode then
 		error("decompile is not enabled. (getscriptbytecode is missing)", 2)
 		return
@@ -1924,7 +1926,7 @@ _ENV.decompile = function(script, x, ...)
 		elseif varType == "string" then -- mode
 			options.DecompilerMode = x
 
-			local timeout = ...
+			local timeout = n_v
 			if timeout then
 				if type(timeout) ~= "number" then
 					error("invalid argument #3 to 'decompile' (number expected)", 2)
