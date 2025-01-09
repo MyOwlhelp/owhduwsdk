@@ -939,7 +939,7 @@ local function Decompile(bytecode, options)
 							else
 								protoBody = "function u" .. randomNumber
 							end
-								
+
 							-- now build parameters
 							protoBody ..= "("
 
@@ -1191,44 +1191,44 @@ local function Decompile(bytecode, options)
 
 							-- beginning
 							local callBody = ""
+							local randomNumber = math.random(1, 125)
 
 							if numResults == -1 then -- MULTRET
-								callBody ..= "... = "
+								callBody = callBody .. "noVar" .. randomNumber .. " = "
 							elseif numResults > 0 then
 								local resultsBody = ""
 								for i = 1, numResults do
-									resultsBody ..= formatRegister(baseRegister + i - 1)
+									resultsBody = resultsBody .. formatRegister(baseRegister + i - 1)
 
 									if i ~= numResults then
-										resultsBody ..= ", "
+										resultsBody = resultsBody .. ", "
 									end
 								end
-								resultsBody ..= " = "
-
-								callBody ..= resultsBody
+								resultsBody = resultsBody .. " = "
+								callBody = callBody .. resultsBody
 							end
 
 							-- middle phase
-							callBody ..= formatRegister(baseRegister) .. namecallMethod .."("
+							callBody = callBody .. formatRegister(baseRegister) .. namecallMethod .. "("
 
 							if numArguments == -1 then -- MULTCALL
-								callBody ..= "..."
+								callBody = callBody .. "noVar" .. randomNumber .. " = "
 							elseif numArguments > 0 then
 								local argumentsBody = ""
 								for i = 1, numArguments do
-									argumentsBody ..= formatRegister(baseRegister + i + argumentOffset)
+									argumentsBody = argumentsBody .. formatRegister(baseRegister + i + argumentOffset)
 
 									if i ~= numArguments then
-										argumentsBody ..= ", "
+										argumentsBody = argumentsBody .. ", "
 									end
 								end
-								callBody ..= argumentsBody
+								callBody = callBody .. argumentsBody
 							end
 
 							-- finale
-							callBody ..= ")"
+							callBody = callBody .. ")"
 
-							result ..= callBody
+							result = result .. callBody
 						elseif opCodeName == "RETURN" then
 							local baseRegister = usedRegisters[1]
 
@@ -1236,15 +1236,15 @@ local function Decompile(bytecode, options)
 
 							local totalValues = extraData[1] - 2
 							if totalValues == -2 then -- MULTRET
-								retBody ..= " ".. formatRegister(baseRegister) ..", ..."
+								retBody = retBody .. " " .. formatRegister(baseRegister) .. ", ..."
 							elseif totalValues > -1 then
-								retBody ..= " "
+								retBody = retBody .. " "
 
 								for i = 0, totalValues do
-									retBody ..= formatRegister(baseRegister + i)
+									retBody = retBody .. formatRegister(baseRegister + i)
 
 									if i ~= totalValues then
-										retBody ..= ", "
+										retBody = retBody .. ", "
 									end
 								end
 							end
