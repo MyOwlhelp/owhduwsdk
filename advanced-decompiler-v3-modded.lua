@@ -18,7 +18,7 @@ local DEFAULT_OPTIONS = {
 	ShowTrivialOperations = false,
 	UseTypeInfo = true, -- allow adding types to function parameters (ex. p1: string, p2: number)
 	ListUsedGlobals = true, -- list all (non-Roblox!!) globals used in the script as a top comment
-	ReturnElapsedTime = false -- return time it took to finish processing the bytecode
+	ReturnElapsedTime = true-- return time it took to finish processing the bytecode
 }
 
 local function LoadFromUrl(x)
@@ -908,7 +908,7 @@ local function Decompile(bytecode, options)
 						end
 
 						local function formatUpvalue(register)
-							return "l__u".. register
+							return "upvu".. register
 						end
 
 						local function formatProto(proto)
@@ -935,7 +935,7 @@ local function Decompile(bytecode, options)
 
 							-- if function has a name, add it
 							if name then
-								protoBody = "local function " .. name
+								protoBody = "local function l__" .. name .. "__l"
 							else
 								protoBody = "function u" .. randomNumber
 							end
@@ -1212,7 +1212,7 @@ local function Decompile(bytecode, options)
 							callBody = callBody .. formatRegister(baseRegister) .. namecallMethod .. "("
 
 							if numArguments == -1 then -- MULTCALL
-								callBody = callBody .. "noVar" .. randomNumber .. " = "
+								callBody = callBody .. "noVar" .. randomNumber
 							elseif numArguments > 0 then
 								local argumentsBody = ""
 								for i = 1, numArguments do
@@ -1229,9 +1229,10 @@ local function Decompile(bytecode, options)
 							callBody = callBody .. ")"
 
 							result = result .. callBody
+
+							-- RETURN opcode handling
 						elseif opCodeName == "RETURN" then
 							local baseRegister = usedRegisters[1]
-
 							local retBody = ""
 
 							local totalValues = extraData[1] - 2
@@ -1239,7 +1240,6 @@ local function Decompile(bytecode, options)
 								retBody = retBody .. " " .. formatRegister(baseRegister) .. ", ..."
 							elseif totalValues > -1 then
 								retBody = retBody .. " "
-
 								for i = 0, totalValues do
 									retBody = retBody .. formatRegister(baseRegister + i)
 
@@ -1248,6 +1248,8 @@ local function Decompile(bytecode, options)
 									end
 								end
 							end
+
+							result = result .. retBody
 
 							result ..= "return".. retBody
 						elseif opCodeName == "JUMP" then
