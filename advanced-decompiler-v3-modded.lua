@@ -14,7 +14,7 @@ local DEFAULT_OPTIONS = {
 	ShowDebugInformation = false, -- show trivial function and array allocation details
 	ShowInstructionLines = true, -- show lines as they are in the source code
 	ShowOperationIndex = false, -- show instruction index. used in jumps #n.
-	ShowOperationNames = true,
+	ShowOperationNames = false,
 	ShowTrivialOperations = false,
 	UseTypeInfo = true, -- allow adding types to function parameters (ex. p1: string, p2: number)
 	ListUsedGlobals = true, -- list all (non-Roblox!!) globals used in the script as a top comment
@@ -918,6 +918,10 @@ local function Decompile(bytecode, options)
 							local isTyped = proto.hasTypeInfo and options.UseTypeInfo
 							local flags = proto.flags
 							local typedParams = proto.typedParams
+							local randomnumbers = {}
+							for i = 1, 10 do
+								randomnumbers[i] = math.random(1, 100)
+							end
 
 							local protoBody = ""
 
@@ -926,17 +930,18 @@ local function Decompile(bytecode, options)
 								if flags.cold and options.EnabledRemarks.ColdRemark then
 									-- function is marked cold and is deemed not profitable to compile natively
 									-- refer to: https://github.com/luau-lang/luau/blob/0.655/Compiler/src/Compiler.cpp#L285
-									protoBody ..= string.format(Strings.DECOMPILER_REMARK, "This function is marked cold and is not compiled natively")
+									protoBody = protoBody .. string.format(Strings.DECOMPILER_REMARK, "This function is marked cold and is not compiled natively")
 								end
 
-								protoBody ..= "@native "
+								protoBody = protoBody .. "@native "
 							end
 
 							-- if function has a name, add it
 							if name then
-								protoBody = "local function ".. name
+								protoBody = "local function " .. name
 							else
-								protoBody = "function"
+								local randomString = table.concat(randomnumbers, "_")
+								protoBody = "function u" .. randomString
 							end
 
 							-- now build parameters
