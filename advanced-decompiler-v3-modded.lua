@@ -912,12 +912,18 @@ local function Decompile(bytecode, options)
 					local function writeOperationBody()
 						local function formatRegister(register)
 							local parameterRegister = register + 2 -- parameter registers start from 0
+							local addLocal = "local"
 							if parameterRegister < numParams + 4 then
 								-- this means we are using preserved parameter register
 								return "p".. ((totalParameters - numParams) + parameterRegister)
 							end
 
-							return "local v".. (register - numParams)
+							local variable = "v".. (register - numParams)
+							if addLocal then
+								return addLocal .. " " .. variable
+							end
+
+							return variable
 						end
 
 						local function formatUpvalue(register)
@@ -1266,7 +1272,7 @@ local function Decompile(bytecode, options)
 							end
 
 							result ..= "return".. retBody
-							
+
 						elseif opCodeName == "JUMP" then
 							local jumpOffset = extraData[1]
 
