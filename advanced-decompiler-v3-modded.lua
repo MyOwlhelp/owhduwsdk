@@ -16,20 +16,20 @@ local DEFAULT_OPTIONS = {
 	ShowOperationIndex = false, -- show instruction index. used in jumps #n.
 	ShowOperationNames = false,
 	ShowTrivialOperations = false,
-	UseTypeInfo = false, -- allow adding types to function parameters (ex. p1: string, p2: number)
+	UseTypeInfo = true, -- allow adding types to function parameters (ex. p1: string, p2: number)
 	ListUsedGlobals = true, -- list all (non-Roblox!!) globals used in the script as a top comment
 	ReturnElapsedTime = true-- return time it took to finish processing the bytecode
 }
 
-local MemeStrings = {
+local SynX = {
 	" Decompiled with the Synapse X Luau decompiler."
 }
 
 local Strings = {
-	SUCCESS = "--" .. MemeStrings[math.random(#MemeStrings)] .. "\n%s",
+	SUCCESS = "--" .. SynX[math.random(#SynX)] .. "\n%s",
 	TIMEOUT = "-- DECOMPILER TIMEOUT",
 	COMPILATION_FAILURE = "-- SCRIPT FAILED TO COMPILE, ERROR:\n%s",
-	UNSUPPORTED_LBC_VERSION = "-- PASSED BYTECODE IS TOO OLD AND IS NOT SUPPORTED",
+	UNSUPPORTED_LBC_VERSION = "-- BYTECODE IS TOO OLD AND IS NOT SUPPORTED",
 	USED_GLOBALS = "-- USED GLOBALS: %s.\n",
 	DECOMPILER_REMARK = "-- DECOMPILER REMARK: %s\n"
 }
