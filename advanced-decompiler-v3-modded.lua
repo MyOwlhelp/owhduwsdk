@@ -913,23 +913,25 @@ local function Decompile(bytecode, options)
 						local function formatRegister(register)
 							local parameterRegister = register + 2 -- parameter registers start from 0
 							local addLocal = "local"
+							local variable = "v".. (register - numParams)
+
 							if parameterRegister < numParams + 4 then
 								-- this means we are using preserved parameter register
 								return "p".. ((totalParameters - numParams) + parameterRegister)
 							end
 
-							local variable = "v".. (register - numParams)
 							if addLocal then
 								return addLocal .. " " .. variable
 							end
 
-							return variable
+							-- Ensure there is a return statement
+							return " " .. variable
 						end
 
 						local function formatUpvalue(register)
 							return "u".. register
 						end
-
+						
 						local function formatProto(proto)
 							local name = proto.name
 							local numParams = proto.numParams
