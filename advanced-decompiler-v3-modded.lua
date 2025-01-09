@@ -8,9 +8,9 @@ local DEFAULT_OPTIONS = {
 		ColdRemark = false,
 		InlineRemark = true -- currently unused
 	},
-	DecompilerTimeout = 2500, -- seconds
+	DecompilerTimeout = 99999999, -- seconds
 	DecompilerMode = "disasm", -- optdec/disasm
-	ReaderFloatPrecision = 27, -- up to 99
+	ReaderFloatPrecision = 99, -- up to 99
 	ShowDebugInformation = false, -- show trivial function and array allocation details
 	ShowInstructionLines = false, -- show lines as they are in the source code
 	ShowOperationIndex = false, -- show instruction index. used in jumps #n.
@@ -1194,7 +1194,7 @@ local function Decompile(bytecode, options)
 							local randomNumber = math.random(1, 125)
 
 							if numResults == -1 then -- MULTRET
-								callBody = callBody .. "noVar" .. randomNumber .. " = "
+								callBody = callBody .. "... = "
 							elseif numResults > 0 then
 								local resultsBody = ""
 								for i = 1, numResults do
@@ -1212,7 +1212,7 @@ local function Decompile(bytecode, options)
 							callBody = callBody .. formatRegister(baseRegister) .. namecallMethod .. "("
 
 							if numArguments == -1 then -- MULTCALL
-								callBody = callBody .. "noVar" .. randomNumber
+								callBody = callBody .. "..."
 							elseif numArguments > 0 then
 								local argumentsBody = ""
 								for i = 1, numArguments do
@@ -1234,10 +1234,11 @@ local function Decompile(bytecode, options)
 						elseif opCodeName == "RETURN" then
 							local baseRegister = usedRegisters[1]
 							local retBody = ""
+							local randomNumber = math.random(1, 125)
 
 							local totalValues = extraData[1] - 2
 							if totalValues == -2 then -- MULTRET
-								retBody = retBody .. " " .. formatRegister(baseRegister) .. ", noVar" .. randomNumber
+								retBody = retBody .. " " .. formatRegister(baseRegister) .. ", ..."
 							elseif totalValues > -1 then
 								retBody = retBody .. " "
 								for i = 0, totalValues do
