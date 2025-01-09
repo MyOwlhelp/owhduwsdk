@@ -1193,60 +1193,61 @@ local function Decompile(bytecode, options)
 							local callBody = ""
 
 							if numResults == -1 then -- MULTRET
-								callBody = callBody .. "n_v" .. formatRegister .. " = "
+								callBody ..= "n_v = "
 							elseif numResults > 0 then
 								local resultsBody = ""
 								for i = 1, numResults do
-									resultsBody = resultsBody .. formatRegister(baseRegister + i - 1)
+									resultsBody ..= formatRegister(baseRegister + i - 1)
 
 									if i ~= numResults then
-										resultsBody = resultsBody .. ", "
+										resultsBody ..= ", "
 									end
 								end
-								resultsBody = resultsBody .. " = "
-								callBody = callBody .. resultsBody
+								resultsBody ..= " = "
+
+								callBody ..= resultsBody
 							end
 
 							-- middle phase
-							callBody = callBody .. formatRegister(baseRegister) .. namecallMethod .. "("
+							callBody ..= formatRegister(baseRegister) .. namecallMethod .."("
 
 							if numArguments == -1 then -- MULTCALL
-								callBody = callBody .. "n_v" .. formatRegister
+								callBody ..= "n_v"
 							elseif numArguments > 0 then
 								local argumentsBody = ""
 								for i = 1, numArguments do
-									argumentsBody = argumentsBody .. formatRegister(baseRegister + i + argumentOffset)
+									argumentsBody ..= formatRegister(baseRegister + i + argumentOffset)
 
 									if i ~= numArguments then
-										argumentsBody = argumentsBody .. ", "
+										argumentsBody ..= ", "
 									end
 								end
-								callBody = callBody .. argumentsBody
+								callBody ..= argumentsBody
 							end
 
 							-- finale
-							callBody = callBody .. ")"
+							callBody ..= ")"
 
-							result = result .. callBody
+							result ..= callBody
+						elseif opCodeName == "RETURN" then
+							local baseRegister = usedRegisters[1]
 
-							-- RETURN opcode handling
-							if opCodeName == "RETURN" then
-								local baseRegister = usedRegisters[1]
-								local retBody = ""
+							local retBody = ""
 
-								local totalValues = extraData[1] - 2
-								if totalValues == -2 then -- MULTRET
-									retBody = retBody .. " " .. formatRegister(baseRegister) .. ", n_v" .. formatRegister
-								elseif totalValues > -1 then
-									retBody = retBody .. " "
-									for i = 0, totalValues do
-										retBody = retBody .. formatRegister(baseRegister + i)
+							local totalValues = extraData[1] - 2
+							if totalValues == -2 then -- MULTRET
+								retBody ..= " ".. formatRegister(baseRegister) ..", n_v"
+							elseif totalValues > -1 then
+								retBody ..= " "
 
-										if i ~= totalValues then
-											retBody = retBody .. ", "
-										end
+								for i = 0, totalValues do
+									retBody ..= formatRegister(baseRegister + i)
+
+									if i ~= totalValues then
+										retBody ..= ", "
 									end
 								end
+							end
 
 								result = result .. retBody
 							
