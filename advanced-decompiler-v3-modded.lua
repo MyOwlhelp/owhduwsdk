@@ -908,7 +908,7 @@ local function Decompile(bytecode, options)
 						end
 
 						local function formatUpvalue(register)
-							return "upvu".. register
+							return "u".. register
 						end
 
 						local function formatProto(proto)
@@ -937,7 +937,7 @@ local function Decompile(bytecode, options)
 							if name then
 								protoBody = "local function l__" .. name .. "__l"
 							else
-								protoBody = "function u" .. randomNumber
+								protoBody = "function "
 							end
 
 							-- now build parameters
