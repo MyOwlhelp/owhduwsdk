@@ -894,7 +894,7 @@ local function Decompile(bytecode, options)
 							line = ""
 						end
 
-						result ..= index .." ".. line .. name
+						result ..= index .." ".. line "l__" .. name .. "__l"
 					end
 					local function writeOperationBody()
 						local function formatRegister(register)
@@ -1006,13 +1006,13 @@ local function Decompile(bytecode, options)
 
 							local name = proto.name
 							if name then
-								result ..= "\n".. protoBody
+								result = result .. "\n" .. protoBody
 								writeActions(registerActions[proto.id])
-								result ..= "end\n".. formatRegister(register) .." = ".. name
+								result = result .. "end\n" .. formatRegister(register) .. " = \"l__" .. name .. "__l\""
 							else
-								result ..= formatRegister(register) .." = ".. protoBody
+								result = result .. formatRegister(register) .. " = " .. protoBody
 								writeActions(registerActions[proto.id])
-								result ..= "end"
+								result = result .. "end"
 							end
 						end
 
