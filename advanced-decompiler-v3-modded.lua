@@ -912,27 +912,17 @@ local function Decompile(bytecode, options)
 					local function writeOperationBody()
 						local function formatRegister(register)
 							local parameterRegister = register + 2 -- parameter registers start from 0
-							local addLocal = "local"
-
-							if parameterRegister < numParams + 3 then
+							if parameterRegister < numParams + 4 then
 								-- this means we are using preserved parameter register
-								return "p" .. ((totalParameters - numParams) + parameterRegister)
+								return "p".. ((totalParameters - numParams) + parameterRegister)
 							end
 
-							return addLocal .. " v" .. (register - numParams)
-						end
-						
-						local function formatLocal(register)
-							local output = "local v" .. register
-							-- Check for nested 'local' and remove if present
-							return output:gsub("local local ", "local ")
+							return "local v".. (register - numParams)
 						end
 
 						local function formatUpvalue(register)
-							return "u" .. register
+							return "u".. register
 						end
-						
-						formatLocal()
 
 						local function formatProto(proto)
 							local name = proto.name
@@ -941,6 +931,7 @@ local function Decompile(bytecode, options)
 							local isTyped = proto.hasTypeInfo and options.UseTypeInfo
 							local flags = proto.flags
 							local typedParams = proto.typedParams
+							local randomNumber = math.random(1, 150) -- Generate a random number between 1 and 150
 
 							local protoBody = ""
 
