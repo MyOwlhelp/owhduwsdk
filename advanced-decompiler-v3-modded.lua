@@ -908,7 +908,7 @@ local function Decompile(bytecode, options)
 						end
 
 						local function formatUpvalue(register)
-							return "u".. register
+							return "l__u".. register
 						end
 
 						local function formatProto(proto)
@@ -918,10 +918,7 @@ local function Decompile(bytecode, options)
 							local isTyped = proto.hasTypeInfo and options.UseTypeInfo
 							local flags = proto.flags
 							local typedParams = proto.typedParams
-							local randomnumbers = {}
-							for i = 1, 10 do
-								randomnumbers[i] = math.random(1, 100)
-							end
+							local randomNumber = math.random(1, 150) -- Generate a random number between 1 and 150
 
 							local protoBody = ""
 
@@ -940,10 +937,9 @@ local function Decompile(bytecode, options)
 							if name then
 								protoBody = "local function " .. name
 							else
-								local randomString = table.concat(randomnumbers, "_")
-								protoBody = "function u" .. randomString
+								protoBody = "function u" .. randomNumber
 							end
-
+								
 							-- now build parameters
 							protoBody ..= "("
 
