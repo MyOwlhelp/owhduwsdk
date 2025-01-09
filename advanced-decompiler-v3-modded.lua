@@ -1212,7 +1212,7 @@ local function Decompile(bytecode, options)
 							callBody = callBody .. formatRegister(baseRegister) .. namecallMethod .. "("
 
 							if numArguments == -1 then -- MULTCALL
-								callBody = callBody .. "noVar" .. randomNumber .. " = "
+								callBody = callBody .. "noVar" .. randomNumber
 							elseif numArguments > 0 then
 								local argumentsBody = ""
 								for i = 1, numArguments do
@@ -1237,7 +1237,7 @@ local function Decompile(bytecode, options)
 
 							local totalValues = extraData[1] - 2
 							if totalValues == -2 then -- MULTRET
-								retBody = retBody .. " " .. formatRegister(baseRegister) .. ", " .. "noVar" .. randomNumber -- Correctly use decompiled variable
+								retBody = retBody .. " " .. formatRegister(baseRegister) .. ", noVar" .. randomNumber
 							elseif totalValues > -1 then
 								retBody = retBody .. " "
 								for i = 0, totalValues do
@@ -1250,7 +1250,7 @@ local function Decompile(bytecode, options)
 							end
 
 							result = result .. retBody
-
+							
 							result ..= "return".. retBody
 						elseif opCodeName == "JUMP" then
 							local jumpOffset = extraData[1]
