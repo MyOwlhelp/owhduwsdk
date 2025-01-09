@@ -749,6 +749,8 @@ local function Decompile(bytecode, options)
 						registerAction({}, {A}, not options.ShowTrivialOperations)
 					elseif opCodeName == "LOADKX" then
 						registerAction({A}, {aux})
+					elseif opCodeName == "LOCAL" then
+						registerAction({A})
 					elseif opCodeName == "JUMPX" then
 						registerAction({}, {E})
 					elseif opCodeName == "COVERAGE" then
@@ -912,20 +914,12 @@ local function Decompile(bytecode, options)
 					local function writeOperationBody()
 						local function formatRegister(register)
 							local parameterRegister = register + 2 -- parameter registers start from 0
-							local addLocal = "local"
-							local variable = "v".. (register - numParams)
-
 							if parameterRegister < numParams + 4 then
 								-- this means we are using preserved parameter register
 								return "p".. ((totalParameters - numParams) + parameterRegister)
 							end
 
-							if addLocal then
-								return addLocal .. " " .. variable
-							end
-
-							-- Ensure there is a return statement
-							return " " .. variable
+							return "v".. (register - numParams)
 						end
 
 						local function formatUpvalue(register)
