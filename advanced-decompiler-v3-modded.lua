@@ -21,6 +21,19 @@ local DEFAULT_OPTIONS = {
 	ReturnElapsedTime = true-- return time it took to finish processing the bytecode
 }
 
+local MemeStrings = {
+	" Decompiled with the Synapse X Luau decompiler."
+}
+
+local Strings = {
+	SUCCESS = "--" .. MemeStrings[math.random(#MemeStrings)] .. "\n%s",
+	TIMEOUT = "-- DECOMPILER TIMEOUT",
+	COMPILATION_FAILURE = "-- SCRIPT FAILED TO COMPILE, ERROR:\n%s",
+	UNSUPPORTED_LBC_VERSION = "-- PASSED BYTECODE IS TOO OLD AND IS NOT SUPPORTED",
+	USED_GLOBALS = "-- USED GLOBALS: %s.\n",
+	DECOMPILER_REMARK = "-- DECOMPILER REMARK: %s\n"
+}
+
 local function LoadFromUrl(x)
 	local BASE_USER = "w-a-e"
 	local BASE_BRANCH = "main"
@@ -51,7 +64,7 @@ local function LoadFromUrl(x)
 end
 local Implementations = LoadFromUrl("Implementations")
 local Reader = LoadFromUrl("Reader")
-local Strings = LoadFromUrl("Strings")
+--local Strings = LoadFromUrl("Strings")
 local Luau = LoadFromUrl("Luau")
 
 local function LoadFlag(name)
