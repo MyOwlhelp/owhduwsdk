@@ -21,8 +21,13 @@ local DEFAULT_OPTIONS = {
 	ReturnElapsedTime = true-- return time it took to finish processing the bytecode
 }
 
+local identify_executor = identifyexecutor or getexecutorname or whatexecutor
+
+local EXECUTOR_NAME = identify_executor and identify_executor() or ""
+local executorname = (identify_executor and table.concat({ identify_executor() }, " ") or "Unknown")
+
 local SynX = {
-	" Decompiled with the Synapse X Luau decompiler."
+	" Decompiled with the".. executorname .."Luau decompiler."
 }
 
 local Strings = {
@@ -497,7 +502,7 @@ local function Decompile(bytecode, options)
 			local protoRegisterActions = {}
 			local localData = {}
 			local globalData = {}
-			
+
 			local totalParams = 0
 			local totalVars = 0
 
@@ -535,12 +540,12 @@ local function Decompile(bytecode, options)
 					end
 				end
 			end
-			
+
 			local protoId = proto.id
 			local protoNumParams = proto.numParams
 			local protoTypeInfo = proto.typeinfo
 			local protoFlags = proto.flags
-			
+
 			local protoVars = 0
 
 			local function logRegister(t, register)
@@ -557,7 +562,7 @@ local function Decompile(bytecode, options)
 				end
 				return isLogged
 			end
-			
+
 			local function modifyRegister(register, isUpvalue)
 				-- parameter registers are preallocated
 				if register < protoNumParams then
@@ -572,7 +577,7 @@ local function Decompile(bytecode, options)
 					return `v{starterCount + depth + register - protoNumParams}`, true
 				end
 			end
-			
+
 			local function baseLocal(register, value)
 				local prefix = "local "
 				-- previously logged
@@ -612,7 +617,7 @@ local function Decompile(bytecode, options)
 
 				return `{key} = {value}`
 			end
-			
+
 			local function writeFlags()
 				local decodedFlags = {}
 
