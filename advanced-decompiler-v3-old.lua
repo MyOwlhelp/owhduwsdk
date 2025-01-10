@@ -4,7 +4,23 @@
 --TODO: stop listing nested upvalues and use them directly
 --TODO: use letter "u" instead of "v" for upvalues
 
-;;CONSTANTS HERE;;
+local DEFAULT_OPTIONS = {
+	EnabledRemarks = {
+		ColdRemark = false,
+		InlineRemark = true -- currently unused
+	},
+	DecompilerTimeout = 99999999, -- seconds
+	DecompilerMode = "disasm", -- optdec/disasm
+	ReaderFloatPrecision = 99, -- up to 99
+	ShowDebugInformation = false, -- show trivial function and array allocation details
+	ShowInstructionLines = false, -- show lines as they are in the source code
+	ShowOperationIndex = false, -- show instruction index. used in jumps #n.
+	ShowOperationNames = false,
+	ShowTrivialOperations = false,
+	UseTypeInfo = true, -- allow adding types to function parameters (ex. p1: string, p2: number)
+	ListUsedGlobals = true, -- list all (non-Roblox!!) globals used in the script as a top comment
+	ReturnElapsedTime = true-- return time it took to finish processing the bytecode
+}
 
 -- TEMPORARY
 local POINT_TYPE_END = 0
@@ -21,6 +37,19 @@ function rshift(x, disp)
 	if disp < 0 then return lshift(x,-disp) end
 	return (x % 2^32) // (2^disp)
 end
+
+local SynX = {
+	" Decompiled with the Synapse X Luau decompiler."
+}
+
+local Strings = {
+	SUCCESS = "--" .. SynX[math.random(#SynX)] .. "\n%s",
+	TIMEOUT = "-- DECOMPILER TIMEOUT",
+	COMPILATION_FAILURE = "-- SCRIPT FAILED TO COMPILE, ERROR:\n%s",
+	UNSUPPORTED_LBC_VERSION = "-- BYTECODE IS TOO OLD AND IS NOT SUPPORTED",
+	USED_GLOBALS = "-- USED GLOBALS: %s.\n",
+	DECOMPILER_REMARK = "-- DECOMPILER REMARK: %s\n"
+}
 
 local function LoadFromUrl(x)
 	local BASE_USER = "w-a-e"
@@ -52,7 +81,7 @@ local function LoadFromUrl(x)
 end
 local Implementations = LoadFromUrl("Implementations")
 local Reader = LoadFromUrl("Reader")
-local Strings = LoadFromUrl("Strings")
+-- local Strings = LoadFromUrl("Strings")
 local Luau = LoadFromUrl("Luau")
 
 local LuauOpCode = Luau.OpCode
@@ -69,9 +98,11 @@ local isGlobal = Implementations.isGlobal
 
 Reader:Set(READER_FLOAT_PRECISION)
 
-local function Decompile(bytecode)
+local function Decompile(bytecode, options)
 	local bytecodeVersion, typeEncodingVersion
-	--
+
+	Reader:Set(options.ReaderFloatPrecision)
+
 	local reader = Reader.new(bytecode)
 	--
 	-- collects all information from the bytecode and organizes it
@@ -459,11 +490,11 @@ local function Decompile(bytecode)
 			local function modifyRegister(register, isUpvalue)
 				-- parameter registers are preallocated
 				if register < protoNumParams then
-					return `p{(totalParams - protoNumParams) + register + 1}`
+					return `p{(totalParams - protoNumParams) + register + 2}`
 				else
 					local starterCount
 					if isUpvalue then
-						starterCount = 0
+						starterCount = 4
 					else
 						starterCount = totalVars
 					end
@@ -586,7 +617,7 @@ local function Decompile(bytecode)
 						output ..= ", "
 					end
 
-					output ..= "..."
+					output ..= "syn"
 				end
 
 				output ..= `) {`-- [line {proto.lineDefined}]`}\n`
@@ -754,7 +785,7 @@ local function Decompile(bytecode)
 							protoOutput ..= baseLocal(A, `not {modifyRegister(B)}`)
 						end
 						opConstructors["GETVARARGS"] = function()
-							protoOutput ..= baseLocals(A, B - 1, "...")
+							protoOutput ..= baseLocals(A, B - 1, "syn")
 						end
 						opConstructors["CONCAT"] = function()
 							local value = modifyRegister(B)
@@ -1224,7 +1255,7 @@ local function Decompile(bytecode)
 
 							if count == 0 then -- MULTRET
 								-- TODO: learn more and fix this
-								protoOutput ..= string.format("%s[%i] = ...", modifyRegister(reg), arrayIndex)
+								protoOutput ..= string.format("%s[%i] = syn", modifyRegister(reg), arrayIndex)
 							else
 								for i = 0, count - 2 do
 									protoOutput ..= string.format("%s[%i] = %s\n", modifyRegister(reg), arrayIndex + i, modifyRegister(arrayChunkReg + i))
@@ -1378,7 +1409,7 @@ local function Decompile(bytecode)
 							protoOutput ..= "return"
 							--if B == 1 then return doesn't return any values
 							if B == 0 then -- MULTRET
-								protoOutput ..= string.format(" %s, ...", modifyRegister(A))
+								protoOutput ..= string.format(" %s, syn", modifyRegister(A))
 							elseif B > 1 then
 								local numValues = B - 2
 								for i = 0, numValues do
@@ -1551,9 +1582,9 @@ _ENV.decompile = function(script)
 		return
 	end
 
-	local output, elapsedTime = Decompile(result)
+	local output, elapsedTime = Decompile(result, options)
 
-	if RETURN_ELAPSED_TIME then
+	if options.ReturnElapsedTime then
 		return output, elapsedTime
 	else
 		return output
