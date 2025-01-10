@@ -999,7 +999,7 @@ local function Decompile(bytecode, options)
 								return "p".. ((totalParameters - numParams) + parameterRegister)
 							end
 
-							return "local v".. (register - numParams)
+							return "v".. (register - numParams)
 						end
 
 						local function formatUpvalue(register)
