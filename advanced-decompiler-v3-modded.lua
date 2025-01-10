@@ -755,6 +755,8 @@ local function Decompile(bytecode, options)
 						registerAction({A}, {B, C})
 					elseif opCodeName == "RETURN" then
 						registerAction({A}, {B})
+					elseif opCodeName == "END" then
+						registerAction({A}, {B})
 					elseif opCodeName == "JUMP" or opCodeName == "JUMPBACK" then
 						registerAction({}, {sD})
 					elseif opCodeName == "JUMPIF" or opCodeName == "JUMPIFNOT" then
@@ -993,8 +995,8 @@ local function Decompile(bytecode, options)
 					end
 					local function writeOperationBody()
 						local function formatRegister(register)
-							local parameterRegister = register + 2 -- parameter registers start from 0
-							if parameterRegister < numParams + 4 then
+							local parameterRegister = register + 3 -- parameter registers start from 0
+							if parameterRegister < numParams + 5 then
 								-- this means we are using preserved parameter register
 								return "p".. ((totalParameters - numParams) + parameterRegister)
 							end
@@ -1346,8 +1348,28 @@ local function Decompile(bytecode, options)
 									end
 								end
 							end
-
 							result ..= "return".. retBody
+						elseif opCodeName == "END" then
+							local baseRegister = usedRegisters[1]
+
+							local retBody = ""
+
+							local totalValues = extraData[1] - 2
+							if totalValues == -2 then -- MULTRET
+								retBody ..= " ".. formatRegister(baseRegister) ..", syn"
+							elseif totalValues > -1 then
+								retBody ..= " "
+
+								for i = 0, totalValues do
+									retBody ..= formatRegister(baseRegister + i)
+
+									if i ~= totalValues then
+										retBody ..= ", "
+									end
+								end
+							end
+
+							result ..= "end"
 
 						elseif opCodeName == "JUMP" then
 							local jumpOffset = extraData[1]
