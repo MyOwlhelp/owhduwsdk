@@ -21,13 +21,10 @@ local DEFAULT_OPTIONS = {
 	ReturnElapsedTime = true-- return time it took to finish processing the bytecode
 }
 
-local identify_executor = identifyexecutor or getexecutorname or whatexecutor
-
-local EXECUTOR_NAME = identify_executor and identify_executor() or ""
-local executorname = (identify_executor and table.concat({ identify_executor() }, " ") or "Unknown")
+local executorname = "Synapse X"
 
 local SynX = {
-	" Decompiled with the".. executorname .."Luau decompiler."
+	" Decompiled with the ".. executorname .." Luau decompiler."
 }
 
 local Strings = {
