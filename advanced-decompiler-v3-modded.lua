@@ -493,8 +493,13 @@ local function Decompile(bytecode, options)
 		-- collected operation data
 		local registerActions = {}
 
-		local function baseProto(proto)
+		local function baseProto(proto, depth, isMainProto)
 			local protoRegisterActions = {}
+			local localData = {}
+			local globalData = {}
+			
+			local totalParams = 0
+			local totalVars = 0
 
 			-- this needs to be done here.
 			local protoActionData = {
@@ -530,7 +535,84 @@ local function Decompile(bytecode, options)
 					end
 				end
 			end
+			
+			local protoId = proto.id
+			local protoNumParams = proto.numParams
+			local protoTypeInfo = proto.typeinfo
+			local protoFlags = proto.flags
+			
+			local protoVars = 0
 
+			local function logRegister(t, register)
+				local dataTable
+				if t == "local" then
+					dataTable = localData
+					protoVars += 1
+				elseif t == "global" then
+					dataTable = globalData
+				end
+				local isLogged = table.find(dataTable, register)
+				if not isLogged then
+					table.insert(dataTable, register)
+				end
+				return isLogged
+			end
+			
+			local function modifyRegister(register, isUpvalue)
+				-- parameter registers are preallocated
+				if register < protoNumParams then
+					return `p{(totalParams - protoNumParams) + register + 1}`
+				else
+					local starterCount
+					if isUpvalue then
+						starterCount = 0
+					else
+						starterCount = totalVars
+					end
+					return `v{starterCount + depth + register - protoNumParams}`, true
+				end
+			end
+			
+			local function baseLocal(register, value)
+				local prefix = "local "
+				-- previously logged
+				if logRegister("local", register) then
+					prefix = ""
+				end
+
+				local register, isVar = modifyRegister(register)
+				if not isVar then
+					prefix = ""
+				end
+
+				return `{prefix}{register} = {value}`
+			end
+			local function baseLocals(register, count, value)
+				if count > 0 then
+					local output = `local `
+
+					for i = 0, count - 1 do
+						local usedRegister = register + i
+						logRegister("local", usedRegister)
+						output ..= modifyRegister(usedRegister)
+						if i ~= count - 1 then
+							output ..= ", "
+						end
+					end
+
+					output ..= ` = {value}`
+
+					return output
+				else
+					return baseLocal(register, value)
+				end
+			end
+			local function baseGlobal(key, value)
+				logRegister("global", key)
+
+				return `{key} = {value}`
+			end
+			
 			local function writeFlags()
 				local decodedFlags = {}
 
@@ -749,8 +831,6 @@ local function Decompile(bytecode, options)
 						registerAction({}, {A}, not options.ShowTrivialOperations)
 					elseif opCodeName == "LOADKX" then
 						registerAction({A}, {aux})
-					elseif opCodeName == "LOCAL" then
-						registerAction({A})
 					elseif opCodeName == "JUMPX" then
 						registerAction({}, {E})
 					elseif opCodeName == "COVERAGE" then
@@ -919,13 +999,13 @@ local function Decompile(bytecode, options)
 								return "p".. ((totalParameters - numParams) + parameterRegister)
 							end
 
-							return "v".. (register - numParams)
+							return "local v".. (register - numParams)
 						end
 
 						local function formatUpvalue(register)
 							return "u".. register
 						end
-						
+
 						local function formatProto(proto)
 							local name = proto.name
 							local numParams = proto.numParams
@@ -978,9 +1058,9 @@ local function Decompile(bytecode, options)
 							if isVarArg then
 								if numParams > 0 then
 									-- top it off with ...
-									protoBody ..= ", n_v"
+									protoBody ..= ", syn"
 								else
-									protoBody ..= "n_v"
+									protoBody ..= "syn"
 								end
 							end
 
@@ -1211,7 +1291,7 @@ local function Decompile(bytecode, options)
 							local callBody = ""
 
 							if numResults == -1 then -- MULTRET
-								callBody ..= "n_v = "
+								callBody ..= "syn = "
 							elseif numResults > 0 then
 								local resultsBody = ""
 								for i = 1, numResults do
@@ -1230,7 +1310,7 @@ local function Decompile(bytecode, options)
 							callBody ..= formatRegister(baseRegister) .. namecallMethod .."("
 
 							if numArguments == -1 then -- MULTCALL
-								callBody ..= "n_v"
+								callBody ..= "syn"
 							elseif numArguments > 0 then
 								local argumentsBody = ""
 								for i = 1, numArguments do
@@ -1254,7 +1334,7 @@ local function Decompile(bytecode, options)
 
 							local totalValues = extraData[1] - 2
 							if totalValues == -2 then -- MULTRET
-								retBody ..= " ".. formatRegister(baseRegister) ..", n_v"
+								retBody ..= " ".. formatRegister(baseRegister) ..", syn"
 							elseif totalValues > -1 then
 								retBody ..= " "
 
@@ -1556,7 +1636,7 @@ local function Decompile(bytecode, options)
 
 							local changeBody = ""
 							if valueCount == 0 then -- MULTRET
-								changeBody = formatRegister(targetRegister) .."[".. startIndex .."] = (n_v)"
+								changeBody = formatRegister(targetRegister) .."[".. startIndex .."] = (syn)"
 							else
 								local totalRegisters = #usedRegisters - 1
 								for i = 1, totalRegisters do
@@ -1658,13 +1738,13 @@ local function Decompile(bytecode, options)
 									end
 								end
 							end
-							retBody ..= " = n_v" -- ...
+							retBody ..= " = syn" -- ...
 
 							result ..= retBody
 						elseif opCodeName == "PREPVARARGS" then
 							local numParams = extraData[1]
 
-							result ..= "-- n_v ; number of fixed args: ".. numParams
+							result ..= "-- syn ; number of fixed args: ".. numParams
 						elseif opCodeName == "LOADKX" then
 							local targetRegister = usedRegisters[1]
 
@@ -1899,7 +1979,7 @@ local function Decompile(bytecode, options)
 end
 
 local _ENV = (getgenv or getrenv or getfenv)()
-_ENV.decompile = function(script, x, n_v)
+_ENV.decompile = function(script, x, syn)
 	if not getscriptbytecode then
 		error("decompile is not enabled. (getscriptbytecode is missing)", 2)
 		return
@@ -1941,7 +2021,7 @@ _ENV.decompile = function(script, x, n_v)
 		elseif varType == "string" then -- mode
 			options.DecompilerMode = x
 
-			local timeout = n_v
+			local timeout = syn
 			if timeout then
 				if type(timeout) ~= "number" then
 					error("invalid argument #3 to 'decompile' (number expected)", 2)
