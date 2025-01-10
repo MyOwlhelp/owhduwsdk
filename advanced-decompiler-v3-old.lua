@@ -4,23 +4,7 @@
 --TODO: stop listing nested upvalues and use them directly
 --TODO: use letter "u" instead of "v" for upvalues
 
-local DEFAULT_OPTIONS = {
-	EnabledRemarks = {
-		ColdRemark = false,
-		InlineRemark = true -- currently unused
-	},
-	DecompilerTimeout = 99999999, -- seconds
-	DecompilerMode = "disasm", -- optdec/disasm
-	ReaderFloatPrecision = 99, -- up to 99
-	ShowDebugInformation = false, -- show trivial function and array allocation details
-	ShowInstructionLines = false, -- show lines as they are in the source code
-	ShowOperationIndex = false, -- show instruction index. used in jumps #n.
-	ShowOperationNames = false,
-	ShowTrivialOperations = false,
-	UseTypeInfo = true, -- allow adding types to function parameters (ex. p1: string, p2: number)
-	ListUsedGlobals = true, -- list all (non-Roblox!!) globals used in the script as a top comment
-	ReturnElapsedTime = true-- return time it took to finish processing the bytecode
-}
+;;CONSTANTS HERE;;
 
 -- TEMPORARY
 local POINT_TYPE_END = 0
@@ -98,11 +82,9 @@ local isGlobal = Implementations.isGlobal
 
 Reader:Set(READER_FLOAT_PRECISION)
 
-local function Decompile(bytecode, options)
+local function Decompile(bytecode)
 	local bytecodeVersion, typeEncodingVersion
-
-	Reader:Set(options.ReaderFloatPrecision)
-
+	--
 	local reader = Reader.new(bytecode)
 	--
 	-- collects all information from the bytecode and organizes it
@@ -490,11 +472,11 @@ local function Decompile(bytecode, options)
 			local function modifyRegister(register, isUpvalue)
 				-- parameter registers are preallocated
 				if register < protoNumParams then
-					return `p{(totalParams - protoNumParams) + register + 2}`
+					return `p{(totalParams - protoNumParams) + register + 1}`
 				else
 					local starterCount
 					if isUpvalue then
-						starterCount = 4
+						starterCount = 0
 					else
 						starterCount = totalVars
 					end
@@ -617,7 +599,7 @@ local function Decompile(bytecode, options)
 						output ..= ", "
 					end
 
-					output ..= "syn"
+					output ..= "..."
 				end
 
 				output ..= `) {`-- [line {proto.lineDefined}]`}\n`
@@ -785,7 +767,7 @@ local function Decompile(bytecode, options)
 							protoOutput ..= baseLocal(A, `not {modifyRegister(B)}`)
 						end
 						opConstructors["GETVARARGS"] = function()
-							protoOutput ..= baseLocals(A, B - 1, "syn")
+							protoOutput ..= baseLocals(A, B - 1, "...")
 						end
 						opConstructors["CONCAT"] = function()
 							local value = modifyRegister(B)
@@ -1255,7 +1237,7 @@ local function Decompile(bytecode, options)
 
 							if count == 0 then -- MULTRET
 								-- TODO: learn more and fix this
-								protoOutput ..= string.format("%s[%i] = syn", modifyRegister(reg), arrayIndex)
+								protoOutput ..= string.format("%s[%i] = ...", modifyRegister(reg), arrayIndex)
 							else
 								for i = 0, count - 2 do
 									protoOutput ..= string.format("%s[%i] = %s\n", modifyRegister(reg), arrayIndex + i, modifyRegister(arrayChunkReg + i))
@@ -1409,7 +1391,7 @@ local function Decompile(bytecode, options)
 							protoOutput ..= "return"
 							--if B == 1 then return doesn't return any values
 							if B == 0 then -- MULTRET
-								protoOutput ..= string.format(" %s, syn", modifyRegister(A))
+								protoOutput ..= string.format(" %s, ...", modifyRegister(A))
 							elseif B > 1 then
 								local numValues = B - 2
 								for i = 0, numValues do
@@ -1582,9 +1564,9 @@ _ENV.decompile = function(script)
 		return
 	end
 
-	local output, elapsedTime = Decompile(result, options)
+	local output, elapsedTime = Decompile(result)
 
-	if options.ReturnElapsedTime then
+	if RETURN_ELAPSED_TIME then
 		return output, elapsedTime
 	else
 		return output
